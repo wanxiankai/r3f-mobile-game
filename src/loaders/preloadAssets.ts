@@ -1,0 +1,60 @@
+import * as THREE from 'three'
+import { useGLTF, useTexture } from '@react-three/drei'
+import { ASSET_MANIFEST, type AssetManifest } from '@/loaders/assetManifest'
+import { eventBus } from '@/utils/eventBus'
+
+let progressBound = false
+
+/**
+ * Hook THREE.DefaultLoadingManager progress into the event bus so the
+ * LoadingScene can render a progress bar without subscribing to loaders.
+ */
+function bindProgress(): void {
+  if (progressBound) return
+  progressBound = true
+
+  THREE.DefaultLoadingManager.onProgress = (_url, loaded, total) => {
+    const ratio = total > 0 ? loaded / total : 0
+    eventBus.emit('asset:progress', ratio)
+  }
+  THREE.DefaultLoadingManager.onLoad = () => {
+    eventBus.emit('asset:progress', 1)
+    eventBus.emit('asset:complete')
+  }
+  THREE.DefaultLoadingManager.onError = (url) => {
+    eventBus.emit('asset:error', url)
+  }
+}
+
+/**
+ * Preload all declared assets. Failures are swallowed (placeholders are used),
+ * but progress is still reported so the bar always completes.
+ */
+export async function preloadAll(manifest: AssetManifest = ASSET_MANIFEST): Promise<void> {
+  bindProgress()
+
+  const tasks: Promise<unknown>[] = []
+
+  for (const url of Object.values(manifest.models)) {
+    tasks.push(
+      Promise.resolve()
+        .then(() => useGLTF.preload(url))
+        .catch(() => eventBus.emit('asset:error', url))
+    )
+  }
+
+  for (const url of Object.values(manifest.textures)) {
+    tasks.push(
+      Promise.resolve()
+        .then(() => useTexture.preload(url))
+        .catch(() => eventBus.emit('asset:error', url))
+    )
+  }
+
+  await Promise.allSettled(tasks)
+
+  // Guarantee the bar reaches 100% even if the manager fired no events
+  // (e.g. all assets are placeholders that fail fast).
+  eventBus.emit('asset:progress', 1)
+  eventBus.emit('asset:complete')
+}

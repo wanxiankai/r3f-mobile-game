@@ -1,0 +1,53 @@
+{
+  "name": "r3f-mobile-game",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Mobile H5 3D game skeleton built with React 18 + React Three Fiber + Rapier + TypeScript + Vite.",
+  "scripts": {
+    "postinstall": "node scripts/copy-decoders.mjs",
+    "dev": "vite --host",
+    "build": "vite build",
+    "preview": "vite preview --host",
+    "lint": "eslint src --ext .ts,.tsx",
+    "format": "prettier --write \"src/**/*.{ts,tsx,css}\""
+  },
+  "dependencies": {
+    "@dimforge/rapier3d-compat": "^0.13.0",
+    "@react-three/drei": "^9.105.0",
+    "@react-three/fiber": "^8.16.0",
+    "@react-three/postprocessing": "^2.16.0",
+    "@react-three/rapier": "^1.3.0",
+    "detect-gpu": "^5.0.0",
+    "howler": "^2.2.4",
+    "leva": "^0.9.35",
+    "mitt": "^3.0.1",
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0",
+    "three": "^0.162.0",
+    "zustand": "^4.5.0"
+  },
+  "devDependencies": {
+    "@types/howler": "^2.2.11",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@types/three": "^0.162.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "@vitejs/plugin-react": "^4.2.0",
+    "eruda": "^3.0.0",
+    "eslint": "^8.57.0",
+    "eslint-plugin-react": "^7.34.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "prettier": "^3.2.0",
+    "r3f-perf": "^7.2.0",
+    "typescript": "^5.4.0",
+    "vite": "^5.2.0",
+    "vite-plugin-compression": "^0.5.1",
+    "vite-plugin-pwa": "^0.19.0"
+  },
+  "engines": {
+    "node": ">=18",
+    "pnpm": ">=8"
+  }
+}
