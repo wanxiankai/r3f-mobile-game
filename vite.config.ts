@@ -90,16 +90,6 @@ export default defineConfig({
         drop_console: true,
         drop_debugger: true
       }
-    },
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          'react-vendor': ['react', 'react-dom'],
-          three: ['three', '@react-three/fiber', '@react-three/drei'],
-          physics: ['@react-three/rapier', '@dimforge/rapier3d-compat'],
-          postprocess: ['@react-three/postprocessing']
-        }
-      }
     }
   }
 })
