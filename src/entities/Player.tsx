@@ -1,6 +1,5 @@
 import { forwardRef, useImperativeHandle, useRef } from 'react'
 import * as THREE from 'three'
-import { useGLTF } from '@react-three/drei'
 import {
   RigidBody,
   CapsuleCollider,
@@ -10,6 +9,7 @@ import { useFrame } from '@react-three/fiber'
 import { getInput } from '@/stores/inputStore'
 import { GAME_CONFIG } from '@/config/gameConfig'
 import { ASSET_MANIFEST } from '@/loaders/assetManifest'
+import { OptionalGLTFModel, useOptionalAsset } from '@/loaders/useOptionalGLTF'
 
 export interface PlayerHandle {
   /** Visual group, used by CameraRig to follow the player. */
@@ -25,10 +25,7 @@ export interface PlayerHandle {
  * - No setState inside useFrame.
  */
 export const Player = forwardRef<PlayerHandle>(function Player(_props, ref) {
-  // useGLTF must be inside <Suspense>. Falls back below if model missing.
-  const gltf = useGLTF(ASSET_MANIFEST.models.player) as unknown as {
-    scene?: THREE.Group
-  }
+  const hasPlayerModel = useOptionalAsset(ASSET_MANIFEST.models.player)
 
   const bodyRef = useRef<RapierRigidBody>(null)
   const groupRef = useRef<THREE.Group>(null)
@@ -79,8 +76,8 @@ export const Player = forwardRef<PlayerHandle>(function Player(_props, ref) {
         args={[GAME_CONFIG.player.capsuleHalfHeight, GAME_CONFIG.player.capsuleRadius]}
       />
       <group ref={groupRef}>
-        {gltf?.scene ? (
-          <primitive object={gltf.scene} />
+        {hasPlayerModel ? (
+          <OptionalGLTFModel url={ASSET_MANIFEST.models.player} />
         ) : (
           // TODO: 替换为真实玩家模型 (assets/models/player.glb)
           <mesh castShadow>

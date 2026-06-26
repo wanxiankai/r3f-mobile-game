@@ -1,9 +1,9 @@
 import { useRef } from 'react'
 import * as THREE from 'three'
-import { useGLTF } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
 import { ASSET_MANIFEST } from '@/loaders/assetManifest'
 import { GAME_CONFIG } from '@/config/gameConfig'
+import { OptionalGLTFModel, useOptionalAsset } from '@/loaders/useOptionalGLTF'
 
 interface EnemyProps {
   position?: [number, number, number]
@@ -18,7 +18,7 @@ interface EnemyProps {
  * Movement mutates the mesh directly (no React state).
  */
 export function Enemy({ position = [0, 0.5, 0], target }: EnemyProps) {
-  const gltf = useGLTF(ASSET_MANIFEST.models.enemy) as unknown as { scene?: THREE.Group }
+  const hasEnemyModel = useOptionalAsset(ASSET_MANIFEST.models.enemy)
   const ref = useRef<THREE.Group>(null)
   const dir = useRef(new THREE.Vector3())
   const tmp = useRef(new THREE.Vector3())
@@ -39,8 +39,8 @@ export function Enemy({ position = [0, 0.5, 0], target }: EnemyProps) {
 
   return (
     <group ref={ref} position={position}>
-      {gltf?.scene ? (
-        <primitive object={gltf.scene.clone()} />
+      {hasEnemyModel ? (
+        <OptionalGLTFModel url={ASSET_MANIFEST.models.enemy} clone />
       ) : (
         // TODO: 替换为真实敌人模型 (assets/models/enemy.glb)
         <mesh castShadow>
