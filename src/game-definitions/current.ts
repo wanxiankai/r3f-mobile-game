@@ -1,3 +1,3 @@
-import { survivalShooterDefinition } from '@/game-definitions/survival-shooter/gameDefinition'
+import { neonRunnerDefinition } from '@/game-definitions/neon-runner/gameDefinition'
 
-export const CURRENT_GAME_DEFINITION = survivalShooterDefinition
+export const CURRENT_GAME_DEFINITION = neonRunnerDefinition
