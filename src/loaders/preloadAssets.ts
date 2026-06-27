@@ -1,7 +1,8 @@
 import * as THREE from 'three'
 import { useGLTF, useTexture } from '@react-three/drei'
-import { ASSET_MANIFEST, type AssetManifest } from '@/loaders/assetManifest'
 import { eventBus } from '@/utils/eventBus'
+import { CURRENT_GAME_DEFINITION } from '@/game-definitions/current'
+import { getPreloadUrls, type AssetPack } from '@/core/assetPacks'
 
 let progressBound = false
 
@@ -30,24 +31,27 @@ function bindProgress(): void {
  * Preload all declared assets. Failures are swallowed (placeholders are used),
  * but progress is still reported so the bar always completes.
  */
-export async function preloadAll(manifest: AssetManifest = ASSET_MANIFEST): Promise<void> {
+export async function preloadAll(
+  packs: AssetPack[] = CURRENT_GAME_DEFINITION.assetPacks
+): Promise<void> {
   bindProgress()
 
   const tasks: Promise<unknown>[] = []
+  const assets = getPreloadUrls(packs, ['boot', 'menu', 'gameplay'])
 
-  for (const url of Object.values(manifest.models)) {
+  for (const asset of assets.filter((entry) => entry.kind === 'model')) {
     tasks.push(
       Promise.resolve()
-        .then(() => useGLTF.preload(url))
-        .catch(() => eventBus.emit('asset:error', url))
+        .then(() => useGLTF.preload(asset.url))
+        .catch(() => eventBus.emit('asset:error', asset.url))
     )
   }
 
-  for (const url of Object.values(manifest.textures)) {
+  for (const asset of assets.filter((entry) => entry.kind === 'texture')) {
     tasks.push(
       Promise.resolve()
-        .then(() => useTexture.preload(url))
-        .catch(() => eventBus.emit('asset:error', url))
+        .then(() => useTexture.preload(asset.url))
+        .catch(() => eventBus.emit('asset:error', asset.url))
     )
   }
 

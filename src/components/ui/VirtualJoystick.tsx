@@ -1,5 +1,7 @@
 import { useInputStore } from '@/stores/inputStore'
 import { useTouch } from '@/hooks/useTouch'
+import { CURRENT_GAME_DEFINITION } from '@/game-definitions/current'
+import { getTouchBinding } from '@/core/actionMap'
 
 const RADIUS = 56
 
@@ -9,6 +11,8 @@ const RADIUS = 56
  */
 export function VirtualJoystick() {
   const { onPointerDown, onPointerMove, onPointerUp, knob } = useTouch(RADIUS)
+  const actionButton = getTouchBinding(CURRENT_GAME_DEFINITION.actions, 'right-button')
+  const actionLabel = actionButton?.touch?.label ?? 'A'
 
   return (
     <>
@@ -50,10 +54,17 @@ export function VirtualJoystick() {
       <button
         onPointerDown={() => {
           useInputStore.getState().setFiring(true)
+          useInputStore.getState().setAction('fire', true)
           useInputStore.getState().queueJump()
         }}
-        onPointerUp={() => useInputStore.getState().setFiring(false)}
-        onPointerCancel={() => useInputStore.getState().setFiring(false)}
+        onPointerUp={() => {
+          useInputStore.getState().setFiring(false)
+          useInputStore.getState().setAction('fire', false)
+        }}
+        onPointerCancel={() => {
+          useInputStore.getState().setFiring(false)
+          useInputStore.getState().setAction('fire', false)
+        }}
         aria-label="action"
         style={{
           position: 'absolute',
@@ -69,7 +80,7 @@ export function VirtualJoystick() {
           touchAction: 'none'
         }}
       >
-        A
+        {actionLabel}
       </button>
     </>
   )

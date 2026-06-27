@@ -4,6 +4,7 @@ import { useGameStore } from '@/stores/gameStore'
 import { useSettingsStore } from '@/stores/settingsStore'
 import { audioManager } from '@/audio/audioManager'
 import type { QualityTier } from '@/types/game'
+import { CURRENT_GAME_DEFINITION } from '@/game-definitions/current'
 
 /**
  * DOM menu overlay. Lets the player start the game and pick a quality tier.
@@ -26,10 +27,10 @@ export function MenuScene() {
 
   return (
     <section className="overlay">
-      <h1 className="title">主菜单</h1>
-      <p className="subtitle">触摸左侧摇杆移动，右侧按钮跳跃 / 开火</p>
+      <h1 className="title">{CURRENT_GAME_DEFINITION.ui.title}</h1>
+      <p className="subtitle">{CURRENT_GAME_DEFINITION.ui.subtitle}</p>
 
-      <Button onClick={start}>开始游戏</Button>
+      <Button onClick={start}>{CURRENT_GAME_DEFINITION.ui.startLabel}</Button>
 
       <fieldset
         style={{

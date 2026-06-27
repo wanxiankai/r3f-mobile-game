@@ -1,5 +1,7 @@
 import { useEffect } from 'react'
 import { useInputStore } from '@/stores/inputStore'
+import { CURRENT_GAME_DEFINITION } from '@/game-definitions/current'
+import { findActionByKey } from '@/core/actionMap'
 
 /**
  * Desktop keyboard input (WASD / arrows + space).
@@ -22,15 +24,28 @@ export function useKeyboard(): void {
 
     const onDown = (e: KeyboardEvent) => {
       const key = e.key.toLowerCase()
-      if (key === ' ') {
+      const binding = findActionByKey(CURRENT_GAME_DEFINITION.actions, key)
+      if (binding?.action === 'jump') {
         useInputStore.getState().queueJump()
+        return
+      }
+      if (binding?.action === 'fire') {
+        useInputStore.getState().setFiring(true)
+        useInputStore.getState().setAction('fire', true)
         return
       }
       pressed.add(key)
       apply()
     }
     const onUp = (e: KeyboardEvent) => {
-      pressed.delete(e.key.toLowerCase())
+      const key = e.key.toLowerCase()
+      const binding = findActionByKey(CURRENT_GAME_DEFINITION.actions, key)
+      if (binding?.action === 'fire') {
+        useInputStore.getState().setFiring(false)
+        useInputStore.getState().setAction('fire', false)
+        return
+      }
+      pressed.delete(key)
       apply()
     }
 

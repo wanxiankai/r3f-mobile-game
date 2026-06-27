@@ -1,15 +1,10 @@
-import { Suspense, useRef } from 'react'
+import { useRef } from 'react'
 import * as THREE from 'three'
 import { useSettingsStore } from '@/stores/settingsStore'
-import { Lights } from '@/components/three/Lights'
-import { Environment } from '@/components/three/Environment'
-import { InstancedEnemies } from '@/components/three/InstancedEnemies'
-import { CameraRig } from '@/systems/CameraRig'
-import { InputSystem } from '@/systems/InputSystem'
-import { SpawnSystem } from '@/systems/SpawnSystem'
-import { Ground } from '@/entities/Ground'
-import { Player, type PlayerHandle } from '@/entities/Player'
-import { Postprocess } from '@/rendering/postprocess'
+import type { PlayerHandle } from '@/entities/Player'
+import { CURRENT_GAME_DEFINITION } from '@/game-definitions/current'
+import { renderSystems } from '@/core/systemRegistry'
+import type { GameSceneContext } from '@/core/gameDefinition'
 
 /**
  * The in-Canvas game scene. Composes all runtime 3D components.
@@ -26,25 +21,11 @@ export function GameScene() {
     playerTarget.current = h?.group ?? null
   }
 
-  return (
-    <>
-      <Environment />
-      <Lights />
+  const context: GameSceneContext = {
+    quality,
+    playerTarget,
+    bindPlayer
+  }
 
-      <Suspense fallback={null}>
-        <Player ref={bindPlayer} />
-      </Suspense>
-
-      <Ground />
-      <InstancedEnemies target={playerTarget} />
-
-      {/* Systems (render nothing, drive the loop) */}
-      <CameraRig target={playerTarget} />
-      <InputSystem />
-      <SpawnSystem />
-
-      {/* Post-processing only when quality allows it */}
-      {quality !== 'low' && <Postprocess />}
-    </>
-  )
+  return <>{renderSystems(CURRENT_GAME_DEFINITION.systems, context)}</>
 }

@@ -3,6 +3,7 @@ import { LoadingBar } from '@/components/ui/LoadingBar'
 import { eventBus } from '@/utils/eventBus'
 import { preloadAll } from '@/loaders/preloadAssets'
 import { useUIStore } from '@/stores/uiStore'
+import { CURRENT_GAME_DEFINITION } from '@/game-definitions/current'
 
 /**
  * DOM loading overlay. Subscribes to eventBus 'asset:progress', runs the
@@ -20,7 +21,7 @@ export function LoadingScene() {
     eventBus.on('asset:progress', onProgress)
 
     let done = false
-    preloadAll().finally(() => {
+    preloadAll(CURRENT_GAME_DEFINITION.assetPacks).finally(() => {
       if (done) return
       done = true
       setProgress(1)
@@ -35,8 +36,8 @@ export function LoadingScene() {
 
   return (
     <section className="overlay" aria-busy="true">
-      <h1 className="title">R3F MOBILE GAME</h1>
-      <p className="subtitle">加载资源中…</p>
+      <h1 className="title">{CURRENT_GAME_DEFINITION.ui.loadingTitle}</h1>
+      <p className="subtitle">{CURRENT_GAME_DEFINITION.ui.loadingSubtitle}</p>
       <LoadingBar progress={progress} />
     </section>
   )

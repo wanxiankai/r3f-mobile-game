@@ -8,9 +8,12 @@ interface InputState {
   firing: boolean
   /** One-shot jump request flag (consumed by Player each frame). */
   jumpQueued: boolean
+  /** Generic action states for template-level input mapping. */
+  actions: Record<string, boolean>
 
   setMove: (v: InputVector) => void
   setFiring: (firing: boolean) => void
+  setAction: (action: string, pressed: boolean) => void
   queueJump: () => void
   consumeJump: () => boolean
   resetInput: () => void
@@ -28,9 +31,12 @@ export const useInputStore = create<InputState>((set, get) => ({
   move: { x: 0, y: 0 },
   firing: false,
   jumpQueued: false,
+  actions: {},
 
   setMove: (v) => set({ move: v }),
   setFiring: (firing) => set({ firing }),
+  setAction: (action, pressed) =>
+    set((state) => ({ actions: { ...state.actions, [action]: pressed } })),
   queueJump: () => set({ jumpQueued: true }),
 
   consumeJump: () => {
@@ -41,7 +47,7 @@ export const useInputStore = create<InputState>((set, get) => ({
     return false
   },
 
-  resetInput: () => set({ move: { x: 0, y: 0 }, firing: false, jumpQueued: false })
+  resetInput: () => set({ move: { x: 0, y: 0 }, firing: false, jumpQueued: false, actions: {} })
 }))
 
 /** Convenience non-subscribing reader for game-loop code. */
