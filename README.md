@@ -1,104 +1,225 @@
-# R3F Mobile Game Skeleton
+# R3F Mobile Game Template
 
-移动端 H5 3D 小游戏项目骨架。React 18 + React Three Fiber + Rapier + TypeScript + Vite + Zustand。
+面向移动端 H5 的 3D 小游戏通用模板。技术栈为 React 18、React Three Fiber、Three.js、Rapier、Zustand、Howler、Vite 和 TypeScript。
 
-> ⚠️ 本仓库由 AI 生成完整可运行源码。**`pnpm install / lint / build / dev` 需在你本地 Node 环境执行**（当前生成环境无 Node 运行时，无法代跑验收命令）。
+这个模板的目标不是只跑一个 demo，而是让你在明确玩法之后，通过替换 `game-definition`、资源包、prefab 和少量系统组合，快速制作一个性能稳定、移动端体验完整的 3D H5 小游戏。
 
-## 1. 技术栈
-React 18.3 · @react-three/fiber 8 · @react-three/drei 9 · @react-three/rapier 1 · three 0.162 · zustand 4 · howler · mitt · detect-gpu · Vite 5 · TypeScript 5 · pnpm。
+## 快速启动
 
-## 2. 环境要求
-Node 18+ · pnpm 8+。
-
-## 3. 启动命令
 ```bash
-pnpm install      # 自动 postinstall 复制 draco/basis 解码器
-pnpm run dev      # http://localhost:3000 (host=0.0.0.0 可真机访问)
-pnpm run build    # 输出 dist (es2020, terser 移除 console, gzip+brotli)
-pnpm run preview  # 预览构建产物
-pnpm run lint     # ESLint
-pnpm run format   # Prettier
+pnpm install
+pnpm run dev
+pnpm run build
+pnpm run preview
 ```
 
-## 4. 目录说明（R3F 组件化思想）
-- `app/` 应用壳：`App`(DOM+Canvas 协调) · `GameCanvas`(R3F Canvas) · `Router`(Canvas 内场景路由) · `LoaderSetup`(解码器注入)
-- `scenes/` 场景：Loading/Menu/GameOver 为 **DOM 层**；GameScene 为 **Canvas 内 3D 场景**
-- `entities/` 3D 实体（Player/Enemy/Bullet/Ground）声明式组件
-- `systems/` 逻辑系统（Physics/Input/CameraRig/Spawn/Animation）渲染 null，仅驱动循环
-- `components/three/` 可复用 3D（Lights/Environment/InstancedEnemies/LODModel）
-- `components/ui/` DOM UI（HUD/LoadingBar/VirtualJoystick/Button）
-- `stores/` Zustand（game/ui/input/settings）
-- `loaders/` `gltfLoader`(Draco+KTX2+Meshopt) · `preloadAssets` · `assetManifest`
-- `rendering/` canvas/postprocess/quality 配置
-- `audio/` Howler 单例 · `utils/` eventBus/disposer/objectPool/math · `config/` 数值与画质三档 · `types/`
+开发服务默认监听 `0.0.0.0:3000`，手机和电脑在同一局域网时可以用 `http://你的局域网 IP:3000` 真机调试。
 
-## 5. 状态管理规范
-- **React state**：UI 局部状态（如 LoadingScene 进度数字）
-- **Zustand 订阅式**：`useStore(s => s.x)` —— 仅低频 UI/游戏状态（score、lives、scene、quality）
-- **Zustand getState 式**：`useStore.getState().x` —— useFrame / 游戏循环内读取（input、paused），**不触发重渲染**
-- **直接操作 Three.js / Rapier 对象**：高频数据（位置、速度、矩阵）经 `useRef` 引用直接 mutate；敌人 transform 存于非 React 的 `systems/enemyRegistry.ts`
+## 当前能力
 
-## 6. R3F 性能要点
-1. `useFrame` 内**禁止 setState**（见 `hooks/useGameLoop` 封装）
-2. 高频数据用 `useRef`，绝不进 React state
-3. Zustand 订阅必须带 selector；多字段用 `shallow`
-4. per-frame 读 store 用 `getState()` / `getInput()`
-5. 生产环境不包 StrictMode（`main.tsx`）
-6. 大量重复对象用 `<Instances>`（`InstancedEnemies`，按画质档位 cap 数量）
-7. Canvas 内优先 Zustand 而非 Context
+- 持久 R3F Canvas、DOM UI overlay、Canvas 内 3D 场景路由。
+- `GameDefinition` 游戏包入口，可组合资源、配置、输入、UI 和系统。
+- `SystemRegistry` 系统注册机制，支持按顺序组合环境、实体、逻辑和渲染系统。
+- `AssetPack` 资源包模型，支持按 boot/menu/gameplay/lazy 阶段组织资源。
+- `ActionMap` 输入映射，兼容键盘、虚拟摇杆和触控按钮。
+- `RuntimeCollection` 高频运行时集合，避免敌人、子弹等对象进入 React state。
+- 生存射击 prefab：敌人生成、波次难度、实例化敌人、实例化子弹、命中计分。
+- 移动端体验：安全区、动态视口高度、设置面板、音量、画质、震动反馈。
+- 性能守护：FPS 采样、持续低帧率自动降画质、Vite chunk 拆分、gzip/brotli、PWA 缓存。
 
-## 7. 资源压缩工具链
-```bash
-gltfpack -i input.glb -o output.glb -cc -tc     # Draco + Meshopt
-toktx --bcmp --t2 output.ktx2 input.png         # 纹理 → KTX2
-toktx --t2 --encode uastc env.ktx2 env.hdr      # HDR 环境贴图
+## 目录导览
+
+```text
+src/app/                    应用壳、Canvas、路由、加载器初始化
+src/core/                   模板内核接口：GameDefinition、SystemRegistry、AssetPack、ActionMap
+src/game-definitions/       当前游戏包和常见游戏模板预设
+src/scenes/                 DOM 场景和 3D 游戏场景
+src/systems/                运行时系统：输入、生成、相机、物理、性能守护
+src/entities/               具体 3D 实体：Player、Ground、Enemy、Bullet
+src/prefabs/                可复用玩法模块：波次、难度、投射物、运行时重置
+src/components/three/       可复用 3D 组件：灯光、环境、实例化敌人、LOD
+src/components/ui/          DOM UI：HUD、摇杆、按钮、设置面板、加载条
+src/stores/                 Zustand 状态：game、ui、input、settings、performance
+src/loaders/                GLTF/KTX2/Draco/Meshopt 加载和预加载
+src/rendering/              Canvas、画质、后处理、性能预算
+src/audio/                  Howler 音频管理
+src/utils/                  eventBus、对象池、数学工具、震动
 ```
 
-## 8. 解码器位置
-`postinstall` 自动复制：
-- `public/assets/draco/`  ← three/examples/jsm/libs/draco
-- `public/assets/basis/`  ← three/examples/jsm/libs/basis
-（已加入 `.gitignore`，由 install 重新生成；目录保留 `.gitkeep`）
+## 第一次制作新游戏的流程
 
-## 9. 设备分级与画质档位
-`hooks/useDeviceTier`(detect-gpu) → 写入 `settingsStore.quality`。三档见 `config/qualityConfig.ts`：
-| 档 | dpr | shadows | postprocess | maxLights | instanceLimit |
-|----|-----|---------|-------------|-----------|---------------|
-| low | 1 | ✗ | ✗ | 1 | 100 |
-| mid | [1,1.5] | ✗ | ✓ | 2 | 500 |
-| high | [1,2] | ✓ | ✓ | 3 | 1000 |
+### 1. 选一个玩法预设
 
-## 10. 移动端调试
-同局域网真机访问 `http://<你的IP>:3000`；DEV 自动注入 Eruda 控制台 + r3f-perf 性能面板（左上角）。
+查看 [src/game-definitions/gameTemplates.ts](/Users/kw/workspace/sq/r3f-mobile-game/src/game-definitions/gameTemplates.ts)，当前预置了：
 
-## 11. 常见问题
-- **iOS 音频**：首次 pointerdown/touchend 解锁（`audioManager` 内处理）
-- **刘海屏**：UI 用 `env(safe-area-inset-*)`；html viewport-fit=cover
-- **后台暂停**：`visibilitychange` → `paused`，frameloop 切 `never`
-- **WeChat WebView**：避免 100vh 用 100dvh；触摸全部经 inputStore
+- 生存射击：固定场地刷怪、发射子弹、波次成长。
+- 跑酷躲避：自动前进、切道、障碍、金币。
+- 收集闯关：探索小地图、收集目标、计时或达成条件过关。
 
----
+如果你的玩法接近其中一种，优先复用它推荐的 systems 和 prefabs。
 
-## TODO（资源/逻辑占位）
-- `assets/models/player.glb`、`enemy.glb`：缺失时降级为 Capsule/Box（见 Player/Enemy/InstancedEnemies 注释 `// TODO`）
-- `assets/textures/ground.ktx2`：地面当前为纯色材质
-- `assets/envmaps/studio.hdr`：高端机环境贴图当前用 drei preset
-- `assets/audio/*.mp3`：bgm/shoot/hit 占位路径
-- 业务逻辑占位：子弹发射与碰撞结算、敌人受击/死亡计分、玩家受击掉血、生成难度曲线
-- `public/assets/icon-192.png` / `icon-512.png`：PWA 图标待补
+### 2. 创建游戏包
 
-## 美术资源 checklist
-- [ ] player.glb（Draco+Meshopt，含 idle/run 动画）
-- [ ] enemy.glb（低面数，适配 Instances）
-- [ ] ground.ktx2 平铺纹理
-- [ ] studio.hdr / .ktx2 环境贴图
-- [ ] bgm.mp3 / shoot.mp3 / hit.mp3
-- [ ] PWA 图标 192/512
+复制当前示例：
 
-## 下一步开发建议
-1. 接入真实 GLB + AnimationSystem 播放角色动画
-2. 实现子弹对象池（`utils/objectPool`）+ Rapier 传感器碰撞 → `enemy:die` 事件 → 计分
-3. SpawnSystem 难度曲线（随 level 提升 spawnInterval/速度）
-4. 玩家受击 → `gameStore.loseLife` → 归零进入 GameOver
-5. 设置面板（音量滑块）接入 settingsStore
-6. 关卡/波次系统与 BGM 切换
+```text
+src/game-definitions/survival-shooter/
+```
+
+改成你的游戏目录，例如：
+
+```text
+src/game-definitions/my-game/
+```
+
+然后在 [src/game-definitions/current.ts](/Users/kw/workspace/sq/r3f-mobile-game/src/game-definitions/current.ts) 切换导出：
+
+```ts
+export const CURRENT_GAME_DEFINITION = myGameDefinition
+```
+
+### 3. 修改游戏定义
+
+核心入口是 `GameDefinition`：
+
+```ts
+export const myGameDefinition: GameDefinition = {
+  id: 'my-game',
+  name: 'My Game',
+  description: '...',
+  config,
+  assets,
+  assetPacks,
+  actions,
+  ui,
+  systems
+}
+```
+
+你通常只需要改这些部分：
+
+- `config`：移动速度、生命、重力、相机、敌人、子弹、关卡数值。
+- `assets`：模型、贴图、环境、音频路径。
+- `assetPacks`：哪些资源首屏加载，哪些进入关卡再加载。
+- `actions`：移动、跳跃、开火、技能、冲刺等输入映射。
+- `ui`：菜单、加载页、按钮文案。
+- `systems`：组合需要的玩法系统。
+
+### 4. 替换资源
+
+资源路径集中在 [src/loaders/assetManifest.ts](/Users/kw/workspace/sq/r3f-mobile-game/src/loaders/assetManifest.ts) 或你自己的游戏包 assets 文件。
+
+推荐资源格式：
+
+```bash
+gltfpack -i input.glb -o output.glb -cc -tc
+toktx --bcmp --t2 output.ktx2 input.png
+toktx --t2 --encode uastc env.ktx2 env.hdr
+```
+
+建议：
+
+- 模型使用 GLB，并用 Draco/Meshopt 压缩。
+- 纹理优先 KTX2。
+- 音频区分 BGM 和 SFX。
+- 首屏资源尽量少，把关卡资源放进 gameplay/lazy 阶段。
+
+### 5. 组合系统
+
+当前示例系统在 [src/game-definitions/survival-shooter/gameDefinition.tsx](/Users/kw/workspace/sq/r3f-mobile-game/src/game-definitions/survival-shooter/gameDefinition.tsx)。
+
+一个系统条目长这样：
+
+```tsx
+{
+  id: 'projectiles',
+  phase: 'entity',
+  order: 130,
+  render: ({ playerTarget }) => <ProjectileSystem owner={playerTarget} />
+}
+```
+
+规则：
+
+- `environment`：灯光、天空、环境贴图。
+- `entity`：玩家、地面、敌人、子弹、道具。
+- `logic`：输入、生成、波次、性能守护。
+- `rendering`：后处理、调试渲染。
+
+通过 `enabled` 可以按画质或玩法条件开关系统。
+
+### 6. 维护性能边界
+
+模板默认遵守这些规则：
+
+- 高频位置、速度、生命周期放在 `RuntimeCollection`、`useRef`、Three/Rapier 对象里。
+- Zustand 只放低频状态，例如分数、生命、等级、设置。
+- `useFrame` 内不要调用 React `setState`。
+- 大量重复对象使用 instancing。
+- 移动端低画质关闭后处理和阴影。
+- `PerformanceGuard` 会在持续低 FPS 时自动降画质。
+
+新增玩法时，优先复用：
+
+- [src/core/runtimeCollection.ts](/Users/kw/workspace/sq/r3f-mobile-game/src/core/runtimeCollection.ts)
+- [src/utils/objectPool.ts](/Users/kw/workspace/sq/r3f-mobile-game/src/utils/objectPool.ts)
+- [src/prefabs/projectiles/ProjectileSystem.tsx](/Users/kw/workspace/sq/r3f-mobile-game/src/prefabs/projectiles/ProjectileSystem.tsx)
+- [src/prefabs/level/WaveSystem.tsx](/Users/kw/workspace/sq/r3f-mobile-game/src/prefabs/level/WaveSystem.tsx)
+
+## 常见二次开发任务
+
+### 改成跑酷游戏
+
+- 保留 `Player`、`InputSystem`、`CameraRig`、`PerformanceGuard`、`SettingsPanel`。
+- 移除 `ProjectileSystem` 和 `InstancedEnemies`。
+- 新增道路循环系统、障碍物集合、金币集合。
+- `ActionMap` 改为左右切道、跳跃、下滑。
+- 地面和障碍物都使用对象复用或实例化渲染。
+
+### 改成收集游戏
+
+- 保留移动、相机、HUD、设置、性能守护。
+- 新增 collectible registry 和实例化渲染。
+- 命中检测可以先用距离检测，复杂地形再接 Rapier sensor。
+- HUD 展示目标数量、倒计时、当前关卡。
+
+### 增加技能按钮
+
+在 action map 增加：
+
+```ts
+{
+  action: 'skill1',
+  label: 'Skill',
+  kind: 'button',
+  keyboard: ['k'],
+  touch: { zone: 'custom', label: 'S' }
+}
+```
+
+然后扩展 `VirtualJoystick` 或新增技能按钮组件，把按下状态写入 `inputStore.actions.skill1`。
+
+## 验收建议
+
+每次完成一个玩法阶段后至少运行：
+
+```bash
+pnpm run build
+```
+
+上线前建议检查：
+
+- 真机首屏加载是否可接受。
+- iOS Safari / 微信 WebView 音频是否能在首次触摸后播放。
+- 横屏、竖屏、刘海屏按钮是否没有被遮挡。
+- 低端机是否会自动降画质。
+- `dist` 中主业务 chunk 是否保持在预算内。
+- 重复对象是否使用实例化或对象池。
+
+## 当前示例 TODO
+
+- 替换 `assets/models/player.glb`、`enemy.glb`。
+- 补充真实地面 KTX2 纹理和环境贴图。
+- 补充 `bgm.mp3`、`shoot.mp3`、`hit.mp3`。
+- 根据实际玩法扩展技能、关卡目标和结算面板。
+- 为 PWA 添加 `icon-192.png` 和 `icon-512.png`。
