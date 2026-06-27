@@ -85,6 +85,17 @@ export default defineConfig({
   build: {
     target: 'es2020',
     minify: 'terser',
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          react: ['react', 'react-dom', 'zustand'],
+          three: ['three', '@react-three/fiber', '@react-three/drei'],
+          effects: ['@react-three/postprocessing'],
+          audio: ['howler']
+        }
+      }
+    },
+    chunkSizeWarningLimit: 2500,
     terserOptions: {
       compress: {
         drop_console: true,

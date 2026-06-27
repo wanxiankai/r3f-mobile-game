@@ -16,6 +16,7 @@ import { Player } from '@/entities/Player'
 import { Postprocess } from '@/rendering/postprocess'
 import { WaveSystem } from '@/prefabs/level/WaveSystem'
 import { ProjectileSystem } from '@/prefabs/projectiles/ProjectileSystem'
+import { PerformanceGuard } from '@/systems/PerformanceGuard'
 
 const systems: SystemEntry<GameSceneContext>[] = [
   {
@@ -81,6 +82,12 @@ const systems: SystemEntry<GameSceneContext>[] = [
     phase: 'logic',
     order: 230,
     render: () => <WaveSystem />
+  },
+  {
+    id: 'performance-guard',
+    phase: 'logic',
+    order: 240,
+    render: () => <PerformanceGuard />
   },
   {
     id: 'postprocess',
