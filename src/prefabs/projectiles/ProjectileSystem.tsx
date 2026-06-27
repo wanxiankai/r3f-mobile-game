@@ -11,6 +11,7 @@ import { enemyRegistry } from '@/systems/enemyRegistry'
 import { uuid } from '@/utils/mathUtil'
 import { projectileRegistry } from '@/prefabs/projectiles/projectileRegistry'
 import { audioManager } from '@/audio/audioManager'
+import { hapticsManager } from '@/utils/haptics'
 
 interface ProjectileSystemProps {
   owner?: React.RefObject<THREE.Object3D | null>
@@ -108,6 +109,7 @@ function updateProjectiles(delta: number) {
         enemy.alive = false
         useGameStore.getState().addScore(GAME_CONFIG.enemy.scorePerKill)
         audioManager.playSFX('hit')
+        hapticsManager.pulse('success')
       }
       break
     }

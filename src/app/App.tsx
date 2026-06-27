@@ -9,6 +9,7 @@ import { useUIStore } from '@/stores/uiStore'
 import { useGameStore } from '@/stores/gameStore'
 import { useDeviceTier } from '@/hooks/useDeviceTier'
 import { useAudio } from '@/hooks/useAudio'
+import { useViewportEnvironment } from '@/hooks/useViewportEnvironment'
 
 /**
  * App root.
@@ -25,6 +26,7 @@ export default function App() {
 
   useDeviceTier()
   useAudio()
+  useViewportEnvironment()
 
   // Pause when the page is hidden (battery + correctness).
   useEffect(() => {

@@ -10,6 +10,7 @@ import { useUIStore } from '@/stores/uiStore'
 export const HUD = memo(function HUD() {
   const score = useGameStore((s) => s.score)
   const lives = useGameStore((s) => s.lives)
+  const level = useGameStore((s) => s.level)
   const togglePause = useUIStore((s) => s.togglePause)
   const paused = useUIStore((s) => s.paused)
 
@@ -26,7 +27,10 @@ export const HUD = memo(function HUD() {
         fontWeight: 700
       }}
     >
-      <div style={{ fontSize: 20 }}>分数 {score}</div>
+      <div style={{ display: 'flex', gap: 14, alignItems: 'center', fontSize: 18 }}>
+        <span>分数 {score}</span>
+        <span style={{ opacity: 0.72 }}>Lv {level}</span>
+      </div>
       <div aria-label="lives" style={{ fontSize: 20, color: 'var(--color-danger)' }}>
         {'\u2665'.repeat(Math.max(0, lives))}
       </div>

@@ -2,6 +2,7 @@ import { useInputStore } from '@/stores/inputStore'
 import { useTouch } from '@/hooks/useTouch'
 import { CURRENT_GAME_DEFINITION } from '@/game-definitions/current'
 import { getTouchBinding } from '@/core/actionMap'
+import { hapticsManager } from '@/utils/haptics'
 
 const RADIUS = 56
 
@@ -53,6 +54,7 @@ export function VirtualJoystick() {
       {/* Fire / jump button (bottom-right) */}
       <button
         onPointerDown={() => {
+          hapticsManager.pulse('tap')
           useInputStore.getState().setFiring(true)
           useInputStore.getState().setAction('fire', true)
           useInputStore.getState().queueJump()
