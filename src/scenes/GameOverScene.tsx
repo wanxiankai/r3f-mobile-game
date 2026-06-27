@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/Button'
 import { useGameStore } from '@/stores/gameStore'
 import { useUIStore } from '@/stores/uiStore'
 import { audioManager } from '@/audio/audioManager'
+import { resetRuntimePrefabs } from '@/prefabs/resetRuntime'
 
 /**
  * DOM game-over overlay. Shows final score and offers retry / menu.
@@ -14,6 +15,7 @@ export function GameOverScene() {
 
   const retry = () => {
     reset()
+    resetRuntimePrefabs()
     setStatus('playing')
     audioManager.playBGM('bgm')
     goToScene('game')
@@ -21,6 +23,7 @@ export function GameOverScene() {
 
   const toMenu = () => {
     reset()
+    resetRuntimePrefabs()
     audioManager.stopBGM()
     goToScene('menu')
   }

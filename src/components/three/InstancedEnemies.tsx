@@ -5,7 +5,8 @@ import { useFrame } from '@react-three/fiber'
 import { useSettingsStore } from '@/stores/settingsStore'
 import { getPreset } from '@/rendering/qualityPreset'
 import { enemyRegistry } from '@/systems/enemyRegistry'
-import { GAME_CONFIG } from '@/config/gameConfig'
+import { useGameStore } from '@/stores/gameStore'
+import { getDifficultySnapshot } from '@/prefabs/level/DifficultyCurve'
 
 interface InstancedEnemiesProps {
   /** Player object the enemies chase. */
@@ -30,6 +31,7 @@ export function InstancedEnemies({ target }: InstancedEnemiesProps) {
   useFrame((_, delta) => {
     const enemies = enemyRegistry.all()
     const tgt = target?.current
+    const difficulty = getDifficultySnapshot(useGameStore.getState().level)
     if (tgt) tgt.getWorldPosition(tmpTarget.current)
 
     const max = Math.min(enemies.length, limit)
@@ -44,7 +46,7 @@ export function InstancedEnemies({ target }: InstancedEnemiesProps) {
         dir.current.y = 0
         const dist = dir.current.length()
         if (dist > 0.5) {
-          dir.current.normalize().multiplyScalar(GAME_CONFIG.enemy.speed * delta)
+          dir.current.normalize().multiplyScalar(difficulty.enemySpeed * delta)
           e.position.add(dir.current)
         }
       }

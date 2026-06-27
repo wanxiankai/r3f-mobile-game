@@ -14,6 +14,8 @@ import { SpawnSystem } from '@/systems/SpawnSystem'
 import { Ground } from '@/entities/Ground'
 import { Player } from '@/entities/Player'
 import { Postprocess } from '@/rendering/postprocess'
+import { WaveSystem } from '@/prefabs/level/WaveSystem'
+import { ProjectileSystem } from '@/prefabs/projectiles/ProjectileSystem'
 
 const systems: SystemEntry<GameSceneContext>[] = [
   {
@@ -51,6 +53,12 @@ const systems: SystemEntry<GameSceneContext>[] = [
     render: ({ playerTarget }) => <InstancedEnemies target={playerTarget} />
   },
   {
+    id: 'projectiles',
+    phase: 'entity',
+    order: 130,
+    render: ({ playerTarget }) => <ProjectileSystem owner={playerTarget} />
+  },
+  {
     id: 'camera-follow',
     phase: 'logic',
     order: 200,
@@ -67,6 +75,12 @@ const systems: SystemEntry<GameSceneContext>[] = [
     phase: 'logic',
     order: 220,
     render: () => <SpawnSystem />
+  },
+  {
+    id: 'waves',
+    phase: 'logic',
+    order: 230,
+    render: () => <WaveSystem />
   },
   {
     id: 'postprocess',

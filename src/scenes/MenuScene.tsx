@@ -5,6 +5,7 @@ import { useSettingsStore } from '@/stores/settingsStore'
 import { audioManager } from '@/audio/audioManager'
 import type { QualityTier } from '@/types/game'
 import { CURRENT_GAME_DEFINITION } from '@/game-definitions/current'
+import { resetRuntimePrefabs } from '@/prefabs/resetRuntime'
 
 /**
  * DOM menu overlay. Lets the player start the game and pick a quality tier.
@@ -18,6 +19,7 @@ export function MenuScene() {
 
   const start = () => {
     reset()
+    resetRuntimePrefabs()
     setStatus('playing')
     audioManager.playBGM('bgm')
     goToScene('game')
